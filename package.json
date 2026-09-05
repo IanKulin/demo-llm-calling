@@ -1,0 +1,12 @@
+{
+  "name": "demo-llm-calling",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Minimal example of calling an LLM from a script for use in a blog post.",
+  "bin": {
+    "llm-call": "./llm-call"
+  },
+  "engines": {
+    "node": ">=20.6.0"
+  }
+}

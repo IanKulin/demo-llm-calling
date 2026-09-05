@@ -1,0 +1,75 @@
+#!/usr/bin/env node
+/**
+ * Minimal example of calling an LLM from a script, via OpenRouter's
+ * OpenAI-compatible chat completions API.
+ *
+ * Reads:
+ *   .env - OPENROUTER_API_KEY and MODEL_NAME
+ *
+ * Usage:
+ *   node llm-call <input text>
+ *   node llm-call "Is Sam a good cat name?"
+ */
+
+const path = require('path');
+
+const ROOT = path.resolve(__dirname);
+const ENV_PATH = path.join(ROOT, '.env');
+
+const inputText = process.argv.slice(2).join(' ');
+
+if (!inputText) {
+  console.error('Usage: node llm-call <input text>');
+  process.exit(1);
+}
+
+try {
+  process.loadEnvFile(ENV_PATH);
+} catch {
+  console.error('Could not load .env');
+  console.error('Create it with:\n  OPENROUTER_API_KEY=sk-or-...\n  MODEL_NAME=some/model-name');
+  process.exit(1);
+}
+
+const { OPENROUTER_API_KEY, MODEL_NAME } = process.env;
+if (!OPENROUTER_API_KEY || !MODEL_NAME) {
+  console.error('.env must set both OPENROUTER_API_KEY and MODEL_NAME');
+  process.exit(1);
+}
+
+async function callLLM(prompt) {
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': 'https://blog.iankulin.com',
+      'X-Title': 'llm-call demo script',
+    },
+    body: JSON.stringify({
+      model: MODEL_NAME,
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`OpenRouter API error ${res.status}: ${await res.text()}`);
+  }
+
+  const data = await res.json();
+  const text = data.choices?.[0]?.message?.content?.trim();
+  if (!text) {
+    throw new Error(`No content in OpenRouter response: ${JSON.stringify(data)}`);
+  }
+  return text;
+}
+
+async function main() {
+  const response = await callLLM(inputText);
+  console.log(response);
+}
+
+main().catch(err => {
+  console.error(err.message);
+  process.exit(1);
+});

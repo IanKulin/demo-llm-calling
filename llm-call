@@ -43,7 +43,7 @@ async function callLLM(prompt) {
     headers: {
       Authorization: `Bearer ${OPENROUTER_API_KEY}`,
       'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://blog.iankulin.com',
+      'HTTP-Referer': 'https://iankulin.com',
       'X-Title': 'llm-call demo script',
     },
     body: JSON.stringify({
